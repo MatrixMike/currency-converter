@@ -15,6 +15,7 @@ import org.junit.After
 import org.junit.Before
 import org.junit.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertFalse
 import kotlin.test.assertNotNull
 import kotlin.test.assertTrue
 
@@ -59,14 +60,28 @@ class CurrencyConverterViewModelTest {
             },
             replaceCurrency = { oldCurrency, newCurrency ->
                 val currentList = selectedCurrenciesFlow.value
-                val index = currentList.indexOf(oldCurrency)
-                if (index != -1) {
-                    selectedCurrenciesFlow.value = currentList.toMutableList().apply {
-                        this[index] = newCurrency
+                val oldIndex = currentList.indexOf(oldCurrency)
+                if (oldIndex != -1) {
+                    val mutableList = currentList.toMutableList()
+                    val newIndex = currentList.indexOf(newCurrency)
+
+                    if (newIndex != -1) {
+                        // Swap if new currency already exists
+                        mutableList[oldIndex] = newCurrency
+                        mutableList[newIndex] = oldCurrency
+                    } else {
+                        // Simple replacement if new currency doesn't exist
+                        mutableList[oldIndex] = newCurrency
                     }
+                    selectedCurrenciesFlow.value = mutableList
                 }
             },
-            getAllAvailableCurrencies = { testAllCurrencies },
+            getAllAvailableCurrencies = {
+                // Return only currencies not already selected
+                testAllCurrencies.filter { currency ->
+                    !selectedCurrenciesFlow.value.any { it.code == currency.code }
+                }
+            },
             convertAllCurrencies = { anchorCode, amount, currencies ->
                 // Simple test conversion: USD=1.0, EUR=0.85, GBP=0.75
                 val rates = mapOf("USD" to 1.0, "EUR" to 0.85, "GBP" to 0.75)
@@ -304,7 +319,12 @@ class CurrencyConverterViewModelTest {
             addCurrency = { _ -> /* Not used in this test */ },
             removeCurrency = { _ -> /* Not used in this test */ },
             replaceCurrency = { _, _ -> /* Not used in this test */ },
-            getAllAvailableCurrencies = { testAllCurrencies },
+            getAllAvailableCurrencies = {
+                // Return only currencies not already selected
+                testAllCurrencies.filter { currency ->
+                    !selectedCurrenciesFlow.value.any { it.code == currency.code }
+                }
+            },
             convertAllCurrencies = { anchorCode, amount, currencies ->
                 val rates = mapOf("USD" to 1.0, "EUR" to 0.85)
                 val anchorRate = rates[anchorCode] ?: 1.0
@@ -380,5 +400,86 @@ class CurrencyConverterViewModelTest {
         assertEquals(2, finalState.currencies.size, "Should still have 2 currencies")
         assertEquals("USD", finalState.currencies[0].currency.code, "USD should still be first")
         assertEquals("GBP", finalState.currencies[1].currency.code, "GBP should replace EUR at position 1")
+    }
+
+    @Test
+    fun `getAvailableCurrenciesForDialog with null should return only unselected currencies`() = runTest {
+        // Given: We have USD and EUR selected
+        val initialState = viewModel.uiState.value
+        val selectedCodes = initialState.currencies.map { it.currency.code }
+
+        // When: Getting available currencies for adding (null parameter)
+        val availableCurrencies = viewModel.getAvailableCurrenciesForDialog(null)
+
+        // Then: Available currencies should not include any selected currencies
+        val availableCodes = availableCurrencies.map { it.code }
+        for (selectedCode in selectedCodes) {
+            assertFalse(availableCodes.contains(selectedCode),
+                "Available currencies should not include already selected currency: $selectedCode")
+        }
+
+        // And: Should include currencies not in selected list
+        assertTrue(availableCurrencies.any { it.code == "GBP" },
+            "Should include GBP since it's not selected")
+
+        // And: Should be sorted alphabetically
+        assertEquals(availableCodes.sorted(), availableCodes,
+            "Currencies should be sorted alphabetically")
+    }
+
+    @Test
+    fun `getAvailableCurrenciesForDialog with currency should include that currency but not others`() = runTest {
+        // Given: We have USD and EUR selected
+        val initialState = viewModel.uiState.value
+
+        // When: Getting available currencies for replacing USD
+        val availableCurrencies = viewModel.getAvailableCurrenciesForDialog(usdCurrency)
+
+        // Then: Should include USD (the one being replaced)
+        assertTrue(availableCurrencies.any { it.code == "USD" },
+            "Should include USD since it's being replaced")
+
+        // But should not include EUR (other selected currency)
+        assertFalse(availableCurrencies.any { it.code == "EUR" },
+            "Should not include EUR since it's selected but not being replaced")
+
+        // And: Should include unselected currencies
+        assertTrue(availableCurrencies.any { it.code == "GBP" },
+            "Should include GBP since it's not selected")
+
+        // And: Should be sorted and deduplicated
+        val codes = availableCurrencies.map { it.code }
+        assertEquals(codes.sorted(), codes,
+            "Currencies should be sorted alphabetically")
+        assertEquals(codes.distinct(), codes,
+            "Should not have duplicate currencies")
+    }
+
+    @Test
+    fun `replaceCurrency should handle swapping existing currencies without duplicates`() = runTest {
+        // Given: We have USD and EUR, and GBP in available currencies
+        // Add GBP first
+        viewModel.addCurrency(gbpCurrency)
+        testDispatcher.scheduler.advanceUntilIdle()
+
+        val stateWithThree = viewModel.uiState.value
+        assertEquals(3, stateWithThree.currencies.size, "Should have 3 currencies now")
+        assertEquals(listOf("USD", "EUR", "GBP"), stateWithThree.currencies.map { it.currency.code })
+
+        // When: Replace USD (position 0) with EUR (already at position 1)
+        viewModel.replaceCurrency(usdCurrency, eurCurrency)
+        testDispatcher.scheduler.advanceUntilIdle()
+
+        // Then: Should swap USD and EUR positions without creating duplicates
+        val finalState = viewModel.uiState.value
+        assertEquals(3, finalState.currencies.size, "Should still have 3 currencies, no duplicates")
+
+        val finalCodes = finalState.currencies.map { it.currency.code }
+        assertEquals(1, finalCodes.count { it == "EUR" }, "Should have exactly one EUR")
+        assertEquals(1, finalCodes.count { it == "USD" }, "Should have exactly one USD")
+        assertEquals(1, finalCodes.count { it == "GBP" }, "Should have exactly one GBP")
+
+        // EUR should be at position 0, USD at position 1 (swapped)
+        assertEquals(listOf("EUR", "USD", "GBP"), finalCodes, "Should have swapped USD and EUR positions")
     }
 }

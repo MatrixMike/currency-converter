@@ -311,4 +311,68 @@ class CurrencyRepositoryTest {
         val convertedAmount = repository.convertAllCurrencies("EUR", 100.0, listOf(usdCurrency))["USD"]!!
         assertEquals(122.0, convertedAmount, 0.01)
     }
+
+    // ==== Currency Replacement Tests ====
+
+    @Test
+    fun `replaceCurrency should swap positions when replacing with existing currency`() = runTest {
+        // Given: Repository with USD, EUR, GBP, JPY (default order)
+        val initialCurrencies = repository.selectedCurrencies.value
+        assertEquals(listOf("USD", "EUR", "GBP", "JPY"), initialCurrencies.map { it.code })
+
+        // When: Replace USD (position 0) with GBP (position 2)
+        repository.replaceCurrency(usdCurrency, gbpCurrency)
+        testDispatcher.scheduler.advanceUntilIdle()
+
+        // Then: GBP should be at position 0, USD should be at position 2 (swapped)
+        val finalCurrencies = repository.selectedCurrencies.value
+        assertEquals(listOf("GBP", "EUR", "USD", "JPY"), finalCurrencies.map { it.code },
+            "Should swap positions when replacing with existing currency")
+    }
+
+    @Test
+    fun `replaceCurrency should replace normally when new currency not in list`() = runTest {
+        // Given: Repository with default currencies
+        val cnyCurrency = AVAILABLE_CURRENCIES.first { it.code == "CNY" }
+
+        // When: Replace EUR with CNY (CNY not in list)
+        repository.replaceCurrency(eurCurrency, cnyCurrency)
+        testDispatcher.scheduler.advanceUntilIdle()
+
+        // Then: CNY should replace EUR at position 1
+        val finalCurrencies = repository.selectedCurrencies.value
+        assertEquals(listOf("USD", "CNY", "GBP", "JPY"), finalCurrencies.map { it.code },
+            "Should replace at same position when new currency not in list")
+    }
+
+    @Test
+    fun `replaceCurrency should handle replacing with same currency`() = runTest {
+        // Given: Repository with default currencies
+        val initialCurrencies = repository.selectedCurrencies.value.map { it.code }
+
+        // When: Replace USD with USD (same currency)
+        repository.replaceCurrency(usdCurrency, usdCurrency)
+        testDispatcher.scheduler.advanceUntilIdle()
+
+        // Then: Nothing should change
+        val finalCurrencies = repository.selectedCurrencies.value.map { it.code }
+        assertEquals(initialCurrencies, finalCurrencies,
+            "Should not change list when replacing with same currency")
+    }
+
+    @Test
+    fun `replaceCurrency should handle currency not in list`() = runTest {
+        // Given: Repository with default currencies
+        val cnyCurrency = AVAILABLE_CURRENCIES.first { it.code == "CNY" }
+        val cadCurrency = AVAILABLE_CURRENCIES.first { it.code == "CAD" }
+
+        // When: Try to replace CNY (not in list) with CAD
+        repository.replaceCurrency(cnyCurrency, cadCurrency)
+        testDispatcher.scheduler.advanceUntilIdle()
+
+        // Then: Nothing should change since CNY wasn't in the list
+        val finalCurrencies = repository.selectedCurrencies.value
+        assertEquals(listOf("USD", "EUR", "GBP", "JPY"), finalCurrencies.map { it.code },
+            "Should not change list when old currency not found")
+    }
 }

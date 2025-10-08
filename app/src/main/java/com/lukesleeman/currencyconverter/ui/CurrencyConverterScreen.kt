@@ -15,7 +15,6 @@ import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.tooling.preview.Preview
 import com.lukesleeman.currencyconverter.data.Currency
-import kotlin.math.abs
 import com.lukesleeman.currencyconverter.di.AppModule
 import com.lukesleeman.currencyconverter.ui.components.AddCurrencyDialog
 import com.lukesleeman.currencyconverter.ui.components.CurrencyItem
@@ -47,7 +46,7 @@ fun CurrencyConverterScreen(
         onBackspace = viewModel::backspace,
         onAddCurrency = viewModel::addCurrency,
         onReplaceCurrency = viewModel::replaceCurrency,
-        getAvailableCurrencies = viewModel::getAvailableCurrencies
+        getAvailableCurrenciesForDialog = viewModel::getAvailableCurrenciesForDialog
     )
 }
 
@@ -62,7 +61,7 @@ private fun CurrencyConverterScreenContent(
     onBackspace: () -> Unit,
     onAddCurrency: (Currency) -> Unit,
     onReplaceCurrency: (Currency, Currency) -> Unit,
-    getAvailableCurrencies: () -> List<Currency>
+    getAvailableCurrenciesForDialog: (Currency?) -> List<Currency>
 ) {
     var showAddCurrencyDialog by remember { mutableStateOf(false) }
     var currencyToReplace by remember { mutableStateOf<Currency?>(null) }
@@ -188,16 +187,7 @@ private fun CurrencyConverterScreenContent(
 
     if (showAddCurrencyDialog) {
         AddCurrencyDialog(
-            availableCurrencies = if (currencyToReplace != null) {
-                // For replacement, show all available currencies (including currently selected ones)
-                // but exclude the currency being replaced since it doesn't make sense to replace with itself
-                val allAvailable = getAvailableCurrencies().toMutableList()
-                val currentlySelected = uiState.currencies.map { it.currency }.filter { it.code != currencyToReplace!!.code }
-                allAvailable.addAll(currentlySelected)
-                allAvailable.distinctBy { it.code }.sortedBy { it.code }
-            } else {
-                getAvailableCurrencies()
-            },
+            availableCurrencies = getAvailableCurrenciesForDialog(currencyToReplace),
             onCurrencySelected = { currency ->
                 currencyToReplace?.let { oldCurrency ->
                     onReplaceCurrency(oldCurrency, currency)
@@ -248,7 +238,7 @@ fun CurrencyConverterScreenPreview() {
             onBackspace = { },
             onAddCurrency = { },
             onReplaceCurrency = { _, _ -> },
-            getAvailableCurrencies = { availableCurrencies }
+            getAvailableCurrenciesForDialog = { availableCurrencies }
         )
     }
 }

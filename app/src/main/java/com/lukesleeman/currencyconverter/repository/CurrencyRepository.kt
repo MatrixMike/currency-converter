@@ -118,9 +118,19 @@ class CurrencyRepository(
         val currentPreferences = getPreferences()
         val currentCodes = currentPreferences.selectedCurrencyCodes.toMutableList()
 
-        val index = currentCodes.indexOf(oldCurrency.code)
-        if (index != -1) {
-            currentCodes[index] = newCurrency.code
+        val oldIndex = currentCodes.indexOf(oldCurrency.code)
+        if (oldIndex != -1) {
+            val newIndex = currentCodes.indexOf(newCurrency.code)
+
+            if (newIndex != -1) {
+                // New currency already exists - swap positions
+                currentCodes[oldIndex] = newCurrency.code
+                currentCodes[newIndex] = oldCurrency.code
+            } else {
+                // New currency doesn't exist - simple replacement
+                currentCodes[oldIndex] = newCurrency.code
+            }
+
             updatePreferences { preferences ->
                 preferences.copy(selectedCurrencyCodes = currentCodes)
             }

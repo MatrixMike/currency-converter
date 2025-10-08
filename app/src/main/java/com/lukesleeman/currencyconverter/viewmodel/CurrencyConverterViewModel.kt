@@ -283,8 +283,17 @@ class CurrencyConverterViewModel(
     }
 
 
-    fun getAvailableCurrencies(): List<Currency> {
-        return getAllAvailableCurrencies()
+    fun getAvailableCurrenciesForDialog(currencyToReplace: Currency?): List<Currency> {
+        return if (currencyToReplace != null) {
+            // For replacement: show available currencies plus the one being replaced
+            // This allows swapping with other selected currencies
+            val allAvailable = getAllAvailableCurrencies().toMutableList()
+            allAvailable.add(currencyToReplace)
+            allAvailable.distinctBy { it.code }.sortedBy { it.code }
+        } else {
+            // For adding: show only unselected currencies, sorted
+            getAllAvailableCurrencies().sortedBy { it.code }
+        }
     }
 
     fun refreshExchangeRates() {

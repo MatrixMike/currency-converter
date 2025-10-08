@@ -29,6 +29,9 @@ Kotlin Language Use
 Compose
 
 - Prefer stateless composables with ViewModel handling state
+- Avoid "business logic" inside the composable - instead shift this to the ViewModel where its
+  testable. The composable should just be a straight renderer of the View Models state, and not
+  contain ifs, build lists, etc
 - Always provide `@Preview` functions for Compose screens/components
 - Use Modifier parameters with default values
 - Follow Material3 design guidelines
