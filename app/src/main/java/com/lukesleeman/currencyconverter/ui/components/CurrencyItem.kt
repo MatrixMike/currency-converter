@@ -54,7 +54,7 @@ fun CurrencyItem(
     Card(
         modifier = modifier
             .fillMaxWidth()
-            .padding(horizontal = 16.dp, vertical = 6.dp)
+            .padding(horizontal = 16.dp)
             .clickable {
                 onFocusRequest?.invoke()
             },
@@ -71,7 +71,7 @@ fun CurrencyItem(
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(16.dp),
+                .padding(horizontal = 16.dp, vertical = 8.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
             Row(
@@ -110,7 +110,7 @@ fun CurrencyItem(
             if (isActive) {
                 TextField(
                     value = amount,
-                    onValueChange = { newValue ->
+                    onValueChange = { newValue: TextFieldValue ->
                         onValueChange?.invoke(newValue)
                     },
                     singleLine = true,
@@ -133,7 +133,9 @@ fun CurrencyItem(
                         textAlign = TextAlign.End,
                         fontWeight = FontWeight.Medium
                     ),
-                    modifier = Modifier.defaultMinSize(minWidth = 120.dp)
+                    modifier = Modifier
+                        .defaultMinSize(minWidth = 120.dp)
+                        .padding(vertical = 8.dp)
                 )
             }
         }
