@@ -6,6 +6,7 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
@@ -20,25 +21,20 @@ fun NumericKeyboard(
     onBackspaceClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    Card(
-        modifier = modifier.fillMaxWidth(),
-        elevation = CardDefaults.cardElevation(defaultElevation = 8.dp),
-        colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surface
-        )
+    Column(
+        modifier = modifier
+            .fillMaxWidth()
+            .padding(16.dp),
+        verticalArrangement = Arrangement.spacedBy(12.dp)
     ) {
-        Column(
-            modifier = Modifier.padding(16.dp).fillMaxSize(),
-            verticalArrangement = Arrangement.spacedBy(8.dp)
-        ) {
             // First row: 7, 8, 9
             Row(
                 modifier = Modifier.fillMaxWidth().weight(1f),
                 horizontalArrangement = Arrangement.spacedBy(8.dp)
             ) {
-                NumberButton("7", onNumberClick, Modifier.weight(1f))
-                NumberButton("8", onNumberClick, Modifier.weight(1f))
-                NumberButton("9", onNumberClick, Modifier.weight(1f))
+                NumberButton("7", onNumberClick, Modifier.weight(1f).fillMaxHeight())
+                NumberButton("8", onNumberClick, Modifier.weight(1f).fillMaxHeight())
+                NumberButton("9", onNumberClick, Modifier.weight(1f).fillMaxHeight())
             }
 
             // Second row: 4, 5, 6
@@ -46,9 +42,9 @@ fun NumericKeyboard(
                 modifier = Modifier.fillMaxWidth().weight(1f),
                 horizontalArrangement = Arrangement.spacedBy(8.dp)
             ) {
-                NumberButton("4", onNumberClick, Modifier.weight(1f))
-                NumberButton("5", onNumberClick, Modifier.weight(1f))
-                NumberButton("6", onNumberClick, Modifier.weight(1f))
+                NumberButton("4", onNumberClick, Modifier.weight(1f).fillMaxHeight())
+                NumberButton("5", onNumberClick, Modifier.weight(1f).fillMaxHeight())
+                NumberButton("6", onNumberClick, Modifier.weight(1f).fillMaxHeight())
             }
 
             // Third row: 1, 2, 3
@@ -56,9 +52,9 @@ fun NumericKeyboard(
                 modifier = Modifier.fillMaxWidth().weight(1f),
                 horizontalArrangement = Arrangement.spacedBy(8.dp)
             ) {
-                NumberButton("1", onNumberClick, Modifier.weight(1f))
-                NumberButton("2", onNumberClick, Modifier.weight(1f))
-                NumberButton("3", onNumberClick, Modifier.weight(1f))
+                NumberButton("1", onNumberClick, Modifier.weight(1f).fillMaxHeight())
+                NumberButton("2", onNumberClick, Modifier.weight(1f).fillMaxHeight())
+                NumberButton("3", onNumberClick, Modifier.weight(1f).fillMaxHeight())
             }
 
             // Fourth row: 0, ., backspace
@@ -66,23 +62,22 @@ fun NumericKeyboard(
                 modifier = Modifier.fillMaxWidth().weight(1f),
                 horizontalArrangement = Arrangement.spacedBy(8.dp)
             ) {
-                NumberButton("0", onNumberClick, Modifier.weight(1f))
+                NumberButton("0", onNumberClick, Modifier.weight(1f).fillMaxHeight())
                 ActionButton(
                     text = ".",
                     onClick = onDecimalClick,
-                    modifier = Modifier.weight(1f),
+                    modifier = Modifier.weight(1f).fillMaxHeight(),
                     backgroundColor = MaterialTheme.colorScheme.secondaryContainer,
                     contentColor = MaterialTheme.colorScheme.onSecondaryContainer
                 )
                 ActionButton(
                     text = "⌫",
                     onClick = onBackspaceClick,
-                    modifier = Modifier.weight(1f),
-                    backgroundColor = MaterialTheme.colorScheme.primaryContainer,
-                    contentColor = MaterialTheme.colorScheme.onPrimaryContainer
+                    modifier = Modifier.weight(1f).fillMaxHeight(),
+                    backgroundColor = MaterialTheme.colorScheme.secondaryContainer,
+                    contentColor = MaterialTheme.colorScheme.onSecondaryContainer
                 )
             }
-        }
     }
 }
 
@@ -94,18 +89,18 @@ private fun NumberButton(
 ) {
     Button(
         onClick = { onNumberClick(number) },
-        modifier = modifier.fillMaxSize(),
-        shape = RoundedCornerShape(12.dp),
+        modifier = modifier,
+        shape = RoundedCornerShape(50),
         colors = ButtonDefaults.buttonColors(
             containerColor = MaterialTheme.colorScheme.surfaceVariant,
             contentColor = MaterialTheme.colorScheme.onSurfaceVariant
         ),
-        elevation = ButtonDefaults.buttonElevation(defaultElevation = 2.dp)
+        elevation = ButtonDefaults.buttonElevation(defaultElevation = 0.dp)
     ) {
         Text(
             text = number,
-            fontSize = 20.sp,
-            fontWeight = FontWeight.Medium
+            fontSize = 24.sp,
+            fontWeight = FontWeight.Normal
         )
     }
 }
@@ -120,18 +115,18 @@ private fun ActionButton(
 ) {
     Button(
         onClick = onClick,
-        modifier = modifier.fillMaxSize(),
-        shape = RoundedCornerShape(12.dp),
+        modifier = modifier,
+        shape = RoundedCornerShape(50),
         colors = ButtonDefaults.buttonColors(
             containerColor = backgroundColor,
             contentColor = contentColor
         ),
-        elevation = ButtonDefaults.buttonElevation(defaultElevation = 2.dp)
+        elevation = ButtonDefaults.buttonElevation(defaultElevation = 0.dp)
     ) {
         Text(
             text = text,
-            fontSize = 18.sp,
-            fontWeight = FontWeight.Medium
+            fontSize = 24.sp,
+            fontWeight = FontWeight.Normal
         )
     }
 }

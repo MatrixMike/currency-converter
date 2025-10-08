@@ -1,5 +1,6 @@
 package com.lukesleeman.currencyconverter.ui
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -67,20 +68,22 @@ private fun CurrencyConverterScreenContent(
     var currencyToReplace by remember { mutableStateOf<Currency?>(null) }
 
     Column(
-        modifier = Modifier.fillMaxSize()
+        modifier = Modifier
+            .fillMaxSize()
+            .background(MaterialTheme.colorScheme.background)
     ) {
         TopAppBar(
             title = {
                 Text(
                     text = "Currency Converter",
                     style = MaterialTheme.typography.titleLarge.copy(
-                        fontWeight = FontWeight.Bold
+                        fontWeight = FontWeight.Normal
                     )
                 )
             },
             colors = TopAppBarDefaults.topAppBarColors(
-                containerColor = MaterialTheme.colorScheme.primaryContainer,
-                titleContentColor = MaterialTheme.colorScheme.onPrimaryContainer
+                containerColor = MaterialTheme.colorScheme.background,
+                titleContentColor = MaterialTheme.colorScheme.onBackground
             )
         )
 
@@ -113,9 +116,11 @@ private fun CurrencyConverterScreenContent(
                 Card(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(horizontal = 16.dp, vertical = 4.dp),
+                        .padding(horizontal = 16.dp, vertical = 6.dp),
+                    shape = androidx.compose.foundation.shape.RoundedCornerShape(16.dp),
+                    elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
                     colors = CardDefaults.cardColors(
-                        containerColor = MaterialTheme.colorScheme.surfaceVariant
+                        containerColor = MaterialTheme.colorScheme.surface
                     )
                 ) {
                     TextButton(
@@ -179,7 +184,6 @@ private fun CurrencyConverterScreenContent(
                     onBackspace()
                 },
                 modifier = Modifier
-                    .padding(horizontal = 16.dp, vertical = 8.dp)
                     .height(300.dp)
             )
         }
