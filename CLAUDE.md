@@ -35,8 +35,9 @@ Compose
 
 Testing
 
-- Test-first development when designing new APIs. When fixing bugs try and begin by writing a test
-  that will reproduce the issue.
+- Test-first development when designing new APIs
+- When fixing bugs try and begin by writing a test that will reproduce the issue. ONLY AFTER we have
+  reproduced the issue should we fix it.
 - Test names with backticks describing behavior: `"should return X when Y"`
 - Avoid mocking frameworks - use higher-order functions and fakes instead
 - Structure: Arrange-Act-Assert with clear comments
