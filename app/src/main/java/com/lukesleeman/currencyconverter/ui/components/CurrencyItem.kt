@@ -17,8 +17,9 @@ import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextField
+import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -63,7 +64,7 @@ fun CurrencyItem(
             containerColor = if (isActive) {
                 MaterialTheme.colorScheme.primaryContainer
             } else {
-                MaterialTheme.colorScheme.surface
+                MaterialTheme.colorScheme.background
             }
         )
     ) {
@@ -107,7 +108,7 @@ fun CurrencyItem(
             Spacer(modifier = Modifier.weight(1f)) // This spacer will take up the flexible space to the left
 
             if (isActive) {
-                OutlinedTextField(
+                TextField(
                     value = amount,
                     onValueChange = { newValue ->
                         onValueChange?.invoke(newValue)
@@ -116,6 +117,12 @@ fun CurrencyItem(
                     textStyle = MaterialTheme.typography.headlineSmall.copy(
                         textAlign = TextAlign.End,
                         fontWeight = FontWeight.Medium
+                    ),
+                    colors = TextFieldDefaults.colors(
+                        focusedContainerColor = androidx.compose.ui.graphics.Color.Transparent,
+                        unfocusedContainerColor = androidx.compose.ui.graphics.Color.Transparent,
+                        focusedIndicatorColor = MaterialTheme.colorScheme.onPrimaryContainer,
+                        unfocusedIndicatorColor = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.5f)
                     ),
                     modifier = Modifier.defaultMinSize(minWidth = 120.dp)
                 )
