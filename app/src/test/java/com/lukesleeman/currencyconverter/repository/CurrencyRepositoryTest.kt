@@ -57,30 +57,32 @@ class CurrencyRepositoryTest {
         userPreferences = null
         savedPreferences = null
 
-        repository = CurrencyRepository(
-            fetchExchangeRatesFromApi = { baseCurrency ->
-                apiThrowsException?.let { throw it }
-                apiResponse ?: Response.error(500, "No response configured".toResponseBody("text/plain".toMediaType()))
-            },
-            saveRates = { rates, timestamp ->
-                savedRates = rates
-                savedTimestamp = timestamp
-            },
-            loadRates = {
-                cachedData ?: ExchangeRateCache(
-                    rates = DefaultRates.getDefaultRates(),
-                    timestamp = System.currentTimeMillis(),
-                    baseCurrency = "EUR"
-                )
-            },
-            loadPreferences = {
-                userPreferences ?: UserPreferences.default()
-            },
-            savePreferences = { preferences ->
-                savedPreferences = preferences
-            }
-        )
+        repository = createRepository()
     }
+
+    private fun createRepository() = CurrencyRepository(
+        fetchExchangeRatesFromApi = { baseCurrency ->
+            apiThrowsException?.let { throw it }
+            apiResponse ?: Response.error(500, "No response configured".toResponseBody("text/plain".toMediaType()))
+        },
+        saveRates = { rates, timestamp ->
+            savedRates = rates
+            savedTimestamp = timestamp
+        },
+        loadRates = {
+            cachedData ?: ExchangeRateCache(
+                rates = DefaultRates.getDefaultRates(),
+                timestamp = System.currentTimeMillis(),
+                baseCurrency = "EUR"
+            )
+        },
+        loadPreferences = {
+            savedPreferences ?: userPreferences ?: UserPreferences.default()
+        },
+        savePreferences = { preferences ->
+            savedPreferences = preferences
+        }
+    )
 
     @After
     fun tearDown() {
@@ -208,6 +210,9 @@ class CurrencyRepositoryTest {
             baseCurrency = "EUR"
         )
 
+        // Re-create repository to pick up the new cached data
+        repository = createRepository()
+
         // When: Fetch exchange rates
         val result = repository.fetchExchangeRates()
 
@@ -232,6 +237,9 @@ class CurrencyRepositoryTest {
             timestamp = expiredTimestamp,
             baseCurrency = "EUR"
         )
+
+        // Re-create repository to pick up the new cached data
+        repository = createRepository()
 
         // When: Fetch exchange rates
         val result = repository.fetchExchangeRates()
@@ -289,6 +297,9 @@ class CurrencyRepositoryTest {
             timestamp = System.currentTimeMillis(),
             baseCurrency = "EUR"
         )
+
+        // Re-create repository to pick up the new cached data
+        repository = createRepository()
 
         // When: Fetch exchange rates
         val result = repository.fetchExchangeRates()
