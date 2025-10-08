@@ -114,6 +114,21 @@ class CurrencyRepository(
         }
     }
 
+    suspend fun replaceCurrency(oldCurrency: Currency, newCurrency: Currency) {
+        val currentPreferences = getPreferences()
+        val currentCodes = currentPreferences.selectedCurrencyCodes.toMutableList()
+
+        val index = currentCodes.indexOf(oldCurrency.code)
+        if (index != -1) {
+            currentCodes[index] = newCurrency.code
+            updatePreferences { preferences ->
+                preferences.copy(selectedCurrencyCodes = currentCodes)
+            }
+            // Update the StateFlow to reflect the change
+            refreshSelectedCurrenciesFromPreferences()
+        }
+    }
+
     suspend fun getPreferences(): UserPreferences {
         return loadPreferences()
     }

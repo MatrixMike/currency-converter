@@ -6,7 +6,7 @@ import com.lukesleeman.currencyconverter.data.Currency
 import com.lukesleeman.currencyconverter.data.UserPreferences
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.flow.flowOf
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.test.StandardTestDispatcher
 import kotlinx.coroutines.test.resetMain
 import kotlinx.coroutines.test.runTest
@@ -31,11 +31,11 @@ class CurrencyConverterViewModelTest {
     private val usdCurrency = Currency("USD", "US Dollar", "$")
     private val eurCurrency = Currency("EUR", "Euro", "€")
     private val gbpCurrency = Currency("GBP", "British Pound", "£")
+    private val jpyCurrency = Currency("JPY", "Japanese Yen", "¥")
 
-    private val testSelectedCurrencies = listOf(usdCurrency, eurCurrency)
-    private val testAllCurrencies = listOf(usdCurrency, eurCurrency, gbpCurrency)
+    private lateinit var selectedCurrenciesFlow: MutableStateFlow<List<Currency>>
+    private val testAllCurrencies = listOf(usdCurrency, eurCurrency, gbpCurrency, jpyCurrency)
 
-    private lateinit var addedCurrencies: MutableList<Currency>
     private var fetchRatesCallCount = 0
     private var testActiveCurrencyCode: String = "USD"
     private var testCurrentInputValue: String = "1.00"
@@ -43,15 +43,29 @@ class CurrencyConverterViewModelTest {
     @Before
     fun setup() {
         Dispatchers.setMain(testDispatcher)
-        addedCurrencies = mutableListOf()
         fetchRatesCallCount = 0
         testActiveCurrencyCode = "USD"
         testCurrentInputValue = "1.00"
 
+        selectedCurrenciesFlow = MutableStateFlow(listOf(usdCurrency, eurCurrency))
+
         viewModel = CurrencyConverterViewModel(
-            selectedCurrenciesFlow = flowOf(testSelectedCurrencies),
-            addCurrency = { currency -> addedCurrencies.add(currency) },
-            removeCurrency = { currency -> addedCurrencies.remove(currency) },
+            selectedCurrenciesFlow = selectedCurrenciesFlow,
+            addCurrency = { currency ->
+                selectedCurrenciesFlow.value = selectedCurrenciesFlow.value + currency
+            },
+            removeCurrency = { currency ->
+                selectedCurrenciesFlow.value = selectedCurrenciesFlow.value.filter { it.code != currency.code }
+            },
+            replaceCurrency = { oldCurrency, newCurrency ->
+                val currentList = selectedCurrenciesFlow.value
+                val index = currentList.indexOf(oldCurrency)
+                if (index != -1) {
+                    selectedCurrenciesFlow.value = currentList.toMutableList().apply {
+                        this[index] = newCurrency
+                    }
+                }
+            },
             getAllAvailableCurrencies = { testAllCurrencies },
             convertAllCurrencies = { anchorCode, amount, currencies ->
                 // Simple test conversion: USD=1.0, EUR=0.85, GBP=0.75
@@ -70,14 +84,14 @@ class CurrencyConverterViewModelTest {
             },
             getPreferences = {
                 UserPreferences(
-                    selectedCurrencyCodes = testSelectedCurrencies.map { it.code },
+                    selectedCurrencyCodes = selectedCurrenciesFlow.value.map { it.code },
                     activeCurrencyCode = testActiveCurrencyCode,
                     currentInputValue = testCurrentInputValue
                 )
             },
             updatePreferences = { update ->
                 val currentPrefs = UserPreferences(
-                    selectedCurrencyCodes = testSelectedCurrencies.map { it.code },
+                    selectedCurrencyCodes = selectedCurrenciesFlow.value.map { it.code },
                     activeCurrencyCode = testActiveCurrencyCode,
                     currentInputValue = testCurrentInputValue
                 )
@@ -243,14 +257,21 @@ class CurrencyConverterViewModelTest {
     }
 
     @Test
-    fun `addCurrency should call addCurrency callback`() = runTest {
+    fun `addCurrency should add currency to the list`() = runTest {
+        // Given: Initial state has USD and EUR
+        val initialState = viewModel.uiState.value
+        assertEquals(2, initialState.currencies.size)
+
         // When: Add GBP currency
         viewModel.addCurrency(gbpCurrency)
         testDispatcher.scheduler.advanceUntilIdle()
 
-        // Then: Should call the callback
-        assertEquals(1, addedCurrencies.size)
-        assertEquals("GBP", addedCurrencies[0].code)
+        // Then: Should have 3 currencies with GBP at the end
+        val updatedState = viewModel.uiState.value
+        assertEquals(3, updatedState.currencies.size)
+        assertEquals("USD", updatedState.currencies[0].currency.code)
+        assertEquals("EUR", updatedState.currencies[1].currency.code)
+        assertEquals("GBP", updatedState.currencies[2].currency.code)
     }
 
     @Test
@@ -277,10 +298,12 @@ class CurrencyConverterViewModelTest {
     @Test
     fun `refreshExchangeRates should not update lastUpdated on failure`() = runTest {
         // Given: ViewModel that fails on refresh
+        val failingFlow = MutableStateFlow(listOf(usdCurrency, eurCurrency))
         val failingViewModel = CurrencyConverterViewModel(
-            selectedCurrenciesFlow = flowOf(testSelectedCurrencies),
-            addCurrency = { currency -> addedCurrencies.add(currency) },
-            removeCurrency = { currency -> addedCurrencies.remove(currency) },
+            selectedCurrenciesFlow = failingFlow,
+            addCurrency = { _ -> /* Not used in this test */ },
+            removeCurrency = { _ -> /* Not used in this test */ },
+            replaceCurrency = { _, _ -> /* Not used in this test */ },
             getAllAvailableCurrencies = { testAllCurrencies },
             convertAllCurrencies = { anchorCode, amount, currencies ->
                 val rates = mapOf("USD" to 1.0, "EUR" to 0.85)
@@ -294,14 +317,14 @@ class CurrencyConverterViewModelTest {
             onFetchRates = { Result.failure(Exception("Network error")) },
             getPreferences = {
                 UserPreferences(
-                    selectedCurrencyCodes = testSelectedCurrencies.map { it.code },
+                    selectedCurrencyCodes = failingFlow.value.map { it.code },
                     activeCurrencyCode = testActiveCurrencyCode,
                     currentInputValue = testCurrentInputValue
                 )
             },
             updatePreferences = { update ->
                 val currentPrefs = UserPreferences(
-                    selectedCurrencyCodes = testSelectedCurrencies.map { it.code },
+                    selectedCurrencyCodes = failingFlow.value.map { it.code },
                     activeCurrencyCode = testActiveCurrencyCode,
                     currentInputValue = testCurrentInputValue
                 )
@@ -338,5 +361,24 @@ class CurrencyConverterViewModelTest {
         // Then: currentInputValue in preferences should be updated to EUR's text value
         assertEquals("85.00", testCurrentInputValue,
             "currentInputValue should be updated to match the new active currency's text value")
+    }
+
+    @Test
+    fun `replaceCurrency should maintain position in currency list`() = runTest {
+        // Given: We have USD and EUR in that order
+        val initialState = viewModel.uiState.value
+        assertEquals(2, initialState.currencies.size)
+        assertEquals("USD", initialState.currencies[0].currency.code)
+        assertEquals("EUR", initialState.currencies[1].currency.code)
+
+        // When: Replace EUR (at position 1) with GBP
+        viewModel.replaceCurrency(eurCurrency, gbpCurrency)
+        testDispatcher.scheduler.advanceUntilIdle()
+
+        // Then: GBP should be at position 1 where EUR was (not at the end)
+        val finalState = viewModel.uiState.value
+        assertEquals(2, finalState.currencies.size, "Should still have 2 currencies")
+        assertEquals("USD", finalState.currencies[0].currency.code, "USD should still be first")
+        assertEquals("GBP", finalState.currencies[1].currency.code, "GBP should replace EUR at position 1")
     }
 }

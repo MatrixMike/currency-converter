@@ -46,6 +46,7 @@ fun CurrencyConverterScreen(
         onAddDecimalPoint = viewModel::addDecimalPoint,
         onBackspace = viewModel::backspace,
         onAddCurrency = viewModel::addCurrency,
+        onReplaceCurrency = viewModel::replaceCurrency,
         getAvailableCurrencies = viewModel::getAvailableCurrencies
     )
 }
@@ -60,9 +61,11 @@ private fun CurrencyConverterScreenContent(
     onAddDecimalPoint: () -> Unit,
     onBackspace: () -> Unit,
     onAddCurrency: (Currency) -> Unit,
+    onReplaceCurrency: (Currency, Currency) -> Unit,
     getAvailableCurrencies: () -> List<Currency>
 ) {
     var showAddCurrencyDialog by remember { mutableStateOf(false) }
+    var currencyToReplace by remember { mutableStateOf<Currency?>(null) }
 
     Column(
         modifier = Modifier.fillMaxSize()
@@ -99,6 +102,10 @@ private fun CurrencyConverterScreenContent(
                     onValueChange = { newValue ->
                         onUpdateActiveFieldText(newValue)
                     },
+                    onCurrencyChangeRequest = {
+                        currencyToReplace = currencyDisplayItem.currency
+                        showAddCurrencyDialog = true
+                    },
                     isActive = currencyDisplayItem.currency.code == uiState.activeCurrency.currency.code
                 )
             }
@@ -113,7 +120,10 @@ private fun CurrencyConverterScreenContent(
                     )
                 ) {
                     TextButton(
-                        onClick = { showAddCurrencyDialog = true },
+                        onClick = {
+                            currencyToReplace = null
+                            showAddCurrencyDialog = true
+                        },
                         modifier = Modifier
                             .fillMaxWidth()
                             .padding(8.dp)
@@ -178,11 +188,25 @@ private fun CurrencyConverterScreenContent(
 
     if (showAddCurrencyDialog) {
         AddCurrencyDialog(
-            availableCurrencies = getAvailableCurrencies(),
-            onCurrencySelected = { currency ->
-                onAddCurrency(currency)
+            availableCurrencies = if (currencyToReplace != null) {
+                // For replacement, show all available currencies (including currently selected ones)
+                // but exclude the currency being replaced since it doesn't make sense to replace with itself
+                val allAvailable = getAvailableCurrencies().toMutableList()
+                val currentlySelected = uiState.currencies.map { it.currency }.filter { it.code != currencyToReplace!!.code }
+                allAvailable.addAll(currentlySelected)
+                allAvailable.distinctBy { it.code }.sortedBy { it.code }
+            } else {
+                getAvailableCurrencies()
             },
-            onDismiss = { showAddCurrencyDialog = false }
+            onCurrencySelected = { currency ->
+                currencyToReplace?.let { oldCurrency ->
+                    onReplaceCurrency(oldCurrency, currency)
+                } ?: onAddCurrency(currency)
+            },
+            onDismiss = {
+                showAddCurrencyDialog = false
+                currencyToReplace = null
+            }
         )
     }
 }
@@ -223,6 +247,7 @@ fun CurrencyConverterScreenPreview() {
             onAddDecimalPoint = { },
             onBackspace = { },
             onAddCurrency = { },
+            onReplaceCurrency = { _, _ -> },
             getAvailableCurrencies = { availableCurrencies }
         )
     }

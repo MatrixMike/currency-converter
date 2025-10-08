@@ -72,6 +72,8 @@ object AppModule {
         return CurrencyConverterViewModel(
             selectedCurrenciesFlow = repository.selectedCurrencies,
             addCurrency = repository::addCurrency,
+            removeCurrency = repository::removeCurrency,
+            replaceCurrency = repository::replaceCurrency,
             getAllAvailableCurrencies = repository::getAvailableCurrencies,
             convertAllCurrencies = repository::convertAllCurrencies,
             onFetchRates = repository::fetchExchangeRates,

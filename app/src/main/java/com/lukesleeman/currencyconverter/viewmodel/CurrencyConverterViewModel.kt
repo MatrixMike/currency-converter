@@ -18,6 +18,8 @@ import java.text.DecimalFormat
 class CurrencyConverterViewModel(
     private val selectedCurrenciesFlow: Flow<List<Currency>>,
     private val addCurrency: suspend (Currency) -> Unit,
+    private val removeCurrency: suspend (Currency) -> Unit,
+    private val replaceCurrency: suspend (Currency, Currency) -> Unit,
     private val getAllAvailableCurrencies: () -> List<Currency>,
     private val convertAllCurrencies: (anchorCode: String, amount: Double, currencies: List<Currency>) -> Map<String, Double>,
     private val onFetchRates: suspend () -> Result<Unit>,
@@ -271,6 +273,12 @@ class CurrencyConverterViewModel(
     fun addCurrency(currency: Currency) {
         viewModelScope.launch {
             addCurrency.invoke(currency)
+        }
+    }
+
+    fun replaceCurrency(oldCurrency: Currency, newCurrency: Currency) {
+        viewModelScope.launch {
+            replaceCurrency.invoke(oldCurrency, newCurrency)
         }
     }
 

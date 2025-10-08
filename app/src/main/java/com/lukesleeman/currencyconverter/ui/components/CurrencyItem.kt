@@ -7,9 +7,14 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.defaultMinSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
@@ -37,8 +42,11 @@ fun CurrencyItem(
     currency: Currency,
     amount: TextFieldValue,
     modifier: Modifier = Modifier,
+
+    // TODO - These probably shouldn't be nullable.
     onFocusRequest: (() -> Unit)? = null,
     onValueChange: ((TextFieldValue) -> Unit)? = null,
+    onCurrencyChangeRequest: (() -> Unit)? = null,
     isActive: Boolean = false
 ) {
     Card(
@@ -63,11 +71,26 @@ fun CurrencyItem(
                 .padding(16.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Text(
-                text = currency.flag,
-                fontSize = 24.sp,
-                modifier = Modifier.padding(end = 12.dp)
-            )
+            Row(
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    text = currency.flag,
+                    fontSize = 24.sp,
+                    modifier = Modifier.padding(end = 4.dp)
+                )
+
+                IconButton(
+                    onClick = { onCurrencyChangeRequest?.invoke() },
+                    modifier = Modifier.size(20.dp)
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.KeyboardArrowDown,
+                        contentDescription = "Change currency",
+                        modifier = Modifier.size(16.dp)
+                    )
+                }
+            }
 
             Text(
                 text = currency.code,
@@ -76,7 +99,7 @@ fun CurrencyItem(
                 ),
                 modifier = Modifier
                     .width(50.dp)
-                    .padding(end = 8.dp)
+                    .padding(start = 8.dp, end = 8.dp)
             )
 
             Spacer(modifier = Modifier.weight(1f)) // This spacer will take up the flexible space to the left
@@ -123,7 +146,8 @@ fun CurrencyItemVariationsPreview() {
         CurrencyItem(
             currency = eur,
             amount = amount,
-            onFocusRequest = { }
+            onFocusRequest = { },
+            onCurrencyChangeRequest = { }
         )
     }
 }
