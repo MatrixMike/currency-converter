@@ -135,7 +135,7 @@ fun CurrencyItem(
                     ),
                     modifier = Modifier
                         .defaultMinSize(minWidth = 120.dp)
-                        .padding(vertical = 8.dp)
+                        .padding(vertical = 16.dp)
                 )
             }
         }
