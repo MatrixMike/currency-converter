@@ -42,11 +42,9 @@ fun CurrencyItem(
     currency: Currency,
     amount: TextFieldValue,
     modifier: Modifier = Modifier,
-
-    // TODO - These probably shouldn't be nullable.
-    onFocusRequest: (() -> Unit)? = null,
-    onValueChange: ((TextFieldValue) -> Unit)? = null,
-    onCurrencyChangeRequest: (() -> Unit)? = null,
+    onFocusRequest: () -> Unit,
+    onValueChange: (TextFieldValue) -> Unit,
+    onCurrencyChangeRequest: () -> Unit,
     isActive: Boolean = false
 ) {
     Card(
@@ -54,7 +52,7 @@ fun CurrencyItem(
             .fillMaxWidth()
             .padding(horizontal = 16.dp)
             .clickable {
-                onFocusRequest?.invoke()
+                onFocusRequest()
             },
         shape = RoundedCornerShape(16.dp),
         elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
@@ -76,7 +74,7 @@ fun CurrencyItem(
                 verticalAlignment = Alignment.CenterVertically,
                 modifier = Modifier
                     .clickable {
-                        onCurrencyChangeRequest?.invoke()
+                        onCurrencyChangeRequest()
                     }
                     .padding(vertical = 8.dp, horizontal = 4.dp)
             ) {
@@ -107,7 +105,7 @@ fun CurrencyItem(
                 TextField(
                     value = amount,
                     onValueChange = { newValue: TextFieldValue ->
-                        onValueChange?.invoke(newValue)
+                        onValueChange(newValue)
                     },
                     singleLine = true,
                     textStyle = MaterialTheme.typography.headlineSmall.copy(
@@ -154,6 +152,7 @@ fun CurrencyItemVariationsPreview() {
             currency = eur,
             amount = amount,
             onFocusRequest = { },
+            onValueChange = { },
             onCurrencyChangeRequest = { }
         )
     }

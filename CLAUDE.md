@@ -34,6 +34,11 @@ Compose
   contain ifs, build lists, etc
 - Always provide `@Preview` functions for Compose screens/components
 - Use Modifier parameters with default values
+- Make composable parameters required by default - only add default values when there's a genuine
+  optional use case
+- Avoid nullable callback parameters - if a callback is always needed in actual usage, make it
+  required
+- Reserve `= null` and optional parameters for true configuration options, not core functionality
 - Follow Material3 design guidelines
 
 Testing
