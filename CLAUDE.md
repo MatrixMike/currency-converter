@@ -21,6 +21,13 @@ Architecture
 - Use `Result<T>` or sealed classes for error handling, instead of returning null
 - Model states explicitly with sealed classes - no nullable "loading" states, or "isLoading"
   booleans.
+- Separate business logic from presentation logic:
+  - Business logic (ViewModel): calculations, conversions, validation, state management
+  - Presentation logic (UI layer): formatting (dates, numbers, currencies), colors, strings, layout
+  - Example: Number parsing → ViewModel, Number formatting (commas, decimals) → UI layer
+- Before following an existing pattern, verify it's architecturally correct
+- If new code would duplicate existing logic, refactor the existing code instead of adding more
+  duplication
 
 Kotlin Language Use
 
@@ -51,6 +58,9 @@ Compose
   stretching on wide displays
 - When using `enableEdgeToEdge()`, always apply `windowInsetsPadding(WindowInsets.systemBars)` to
   handle both 3-button and gesture navigation
+- ViewModels should be UI-framework agnostic - avoid presentation concerns like DecimalFormat,
+  date formatting, etc.
+- Use VisualTransformation, remember{}, derivedStateOf for presentation-only transformations
 
 Testing
 
@@ -75,5 +85,12 @@ Planning (Before Implementation)
 - ALWAYS search for existing functionality first: Before proposing any new function, utility, or helper, use Grep/Glob to search the codebase for existing implementations. Search for relevant keywords related to what you're about to create (e.g., if creating formatting logic, search for "format"; if creating parsing logic, search for "parse").
 - Read relevant existing code to understand current approach
 - Identify code that will need refactoring to avoid duplication or where old and new approaches would coexist
+- Question existing architecture: If existing code violates separation of concerns, propose
+  refactoring first
+- Apply "one source of truth" rigorously: If you'd create duplicate
+  formatting/parsing/validation, that's a signal to refactor
+- When uncertain about layer boundaries, ask: "Could this logic exist without Android/Compose?"
+  - Yes → ViewModel/domain
+  - No → UI layer
 - Structure plan as: failing tests → implementation → passing tests → refactor
 - Explicitly call out what existing code will be removed/replaced in your plan
