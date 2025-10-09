@@ -8,14 +8,12 @@ import androidx.compose.foundation.layout.defaultMinSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
@@ -75,7 +73,12 @@ fun CurrencyItem(
             verticalAlignment = Alignment.CenterVertically
         ) {
             Row(
-                verticalAlignment = Alignment.CenterVertically
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier
+                    .clickable {
+                        onCurrencyChangeRequest?.invoke()
+                    }
+                    .padding(vertical = 8.dp, horizontal = 4.dp)
             ) {
                 Text(
                     text = currency.flag,
@@ -83,27 +86,20 @@ fun CurrencyItem(
                     modifier = Modifier.padding(end = 4.dp)
                 )
 
-                IconButton(
-                    onClick = { onCurrencyChangeRequest?.invoke() },
-                    modifier = Modifier.size(20.dp)
-                ) {
-                    Icon(
-                        imageVector = Icons.Default.KeyboardArrowDown,
-                        contentDescription = "Change currency",
-                        modifier = Modifier.size(16.dp)
-                    )
-                }
-            }
+                Text(
+                    text = currency.code,
+                    style = MaterialTheme.typography.titleMedium.copy(
+                        fontWeight = FontWeight.Bold
+                    ),
+                    modifier = Modifier.padding(start = 8.dp, end = 8.dp)
+                )
 
-            Text(
-                text = currency.code,
-                style = MaterialTheme.typography.titleMedium.copy(
-                    fontWeight = FontWeight.Bold
-                ),
-                modifier = Modifier
-                    .width(50.dp)
-                    .padding(start = 8.dp, end = 8.dp)
-            )
+                Icon(
+                    imageVector = Icons.Default.KeyboardArrowDown,
+                    contentDescription = "Change currency",
+                    modifier = Modifier.size(16.dp)
+                )
+            }
 
             Spacer(modifier = Modifier.weight(1f)) // This spacer will take up the flexible space to the left
 
