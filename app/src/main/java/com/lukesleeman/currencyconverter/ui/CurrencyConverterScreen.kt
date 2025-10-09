@@ -15,6 +15,9 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.systemBars
+import androidx.compose.foundation.layout.windowInsetsPadding
 import com.lukesleeman.currencyconverter.data.Currency
 import com.lukesleeman.currencyconverter.di.AppModule
 import com.lukesleeman.currencyconverter.ui.components.AddCurrencyDialog
@@ -77,6 +80,7 @@ private fun CurrencyConverterScreenContent(
             modifier = Modifier
                 .fillMaxSize()
                 .widthIn(max = 700.dp)
+                .windowInsetsPadding(WindowInsets.systemBars)
         ) {
         TopAppBar(
             title = {
