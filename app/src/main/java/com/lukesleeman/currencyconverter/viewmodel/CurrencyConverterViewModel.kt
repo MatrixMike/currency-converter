@@ -286,6 +286,34 @@ class CurrencyConverterViewModel(
         }
     }
 
+    fun removeCurrency(currency: Currency) {
+        val currentState = _uiState.value
+
+        // Don't remove if it's the last currency
+        if (currentState.currencies.size <= 1) {
+            return
+        }
+
+        viewModelScope.launch {
+            // If removing the active currency, switch to the first remaining currency
+            if (currency.code == currentState.activeCurrency.currency.code) {
+                val remainingCurrencies = currentState.currencies.filter { it.currency.code != currency.code }
+                if (remainingCurrencies.isNotEmpty()) {
+                    val newActiveCurrency = remainingCurrencies.first().currency
+                    updatePreferences { preferences ->
+                        preferences.copy(activeCurrencyCode = newActiveCurrency.code)
+                    }
+                }
+            }
+
+            removeCurrency.invoke(currency)
+        }
+    }
+
+    fun canRemoveCurrency(currencyCode: String): Boolean {
+        return _uiState.value.currencies.size > 1
+    }
+
 
     fun getAvailableCurrenciesForDialog(currencyToReplace: Currency?): List<Currency> {
         return if (currencyToReplace != null) {

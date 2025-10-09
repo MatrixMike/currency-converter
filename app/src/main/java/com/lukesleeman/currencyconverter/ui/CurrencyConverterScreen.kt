@@ -50,6 +50,8 @@ fun CurrencyConverterScreen(
         onBackspace = viewModel::backspace,
         onAddCurrency = viewModel::addCurrency,
         onReplaceCurrency = viewModel::replaceCurrency,
+        onRemoveCurrency = viewModel::removeCurrency,
+        canRemoveCurrency = viewModel::canRemoveCurrency,
         getAvailableCurrenciesForDialog = viewModel::getAvailableCurrenciesForDialog
     )
 }
@@ -65,6 +67,8 @@ private fun CurrencyConverterScreenContent(
     onBackspace: () -> Unit,
     onAddCurrency: (Currency) -> Unit,
     onReplaceCurrency: (Currency, Currency) -> Unit,
+    onRemoveCurrency: (Currency) -> Unit,
+    canRemoveCurrency: (String) -> Boolean,
     getAvailableCurrenciesForDialog: (Currency?) -> List<Currency>
 ) {
     var showAddCurrencyDialog by remember { mutableStateOf(false) }
@@ -118,6 +122,10 @@ private fun CurrencyConverterScreenContent(
                         currencyToReplace = currencyDisplayItem.currency
                         showAddCurrencyDialog = true
                     },
+                    onRemove = {
+                        onRemoveCurrency(currencyDisplayItem.currency)
+                    },
+                    canRemove = canRemoveCurrency(currencyDisplayItem.currency.code),
                     isActive = currencyDisplayItem.currency.code == uiState.activeCurrency.currency.code
                 )
             }
@@ -253,6 +261,8 @@ fun CurrencyConverterScreenPreview() {
             onBackspace = { },
             onAddCurrency = { },
             onReplaceCurrency = { _, _ -> },
+            onRemoveCurrency = { },
+            canRemoveCurrency = { true },
             getAvailableCurrenciesForDialog = { availableCurrencies }
         )
     }

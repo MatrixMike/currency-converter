@@ -505,4 +505,69 @@ class CurrencyConverterViewModelTest {
         assertEquals(expectedSelection, gbpItem.textFieldValue.selection,
             "GBP text should be fully selected when it becomes active")
     }
+
+    @Test
+    fun `removeCurrency should remove currency from list`() = runTest {
+        // Given: We have USD and EUR
+        val initialState = viewModel.uiState.value
+        assertEquals(2, initialState.currencies.size)
+        assertTrue(initialState.currencies.any { it.currency.code == "EUR" })
+
+        // When: Remove EUR
+        viewModel.removeCurrency(eurCurrency)
+        testDispatcher.scheduler.advanceUntilIdle()
+
+        // Then: Should have only USD
+        val finalState = viewModel.uiState.value
+        assertEquals(1, finalState.currencies.size)
+        assertEquals("USD", finalState.currencies[0].currency.code)
+        assertFalse(finalState.currencies.any { it.currency.code == "EUR" })
+    }
+
+    @Test
+    fun `removeCurrency should switch active currency when removing the active one`() = runTest {
+        // Given: EUR is active
+        viewModel.setActiveCurrency("EUR")
+        testDispatcher.scheduler.advanceUntilIdle()
+
+        val stateBeforeRemoval = viewModel.uiState.value
+        assertEquals("EUR", stateBeforeRemoval.activeCurrency.currency.code)
+
+        // When: Remove EUR (the active currency)
+        viewModel.removeCurrency(eurCurrency)
+        testDispatcher.scheduler.advanceUntilIdle()
+
+        // Then: USD should become active (first remaining currency)
+        val finalState = viewModel.uiState.value
+        assertEquals("USD", finalState.activeCurrency.currency.code)
+        assertEquals(1, finalState.currencies.size)
+    }
+
+    @Test
+    fun `canRemoveCurrency should return false when only one currency remains`() = runTest {
+        // Given: Remove EUR so only USD remains
+        viewModel.removeCurrency(eurCurrency)
+        testDispatcher.scheduler.advanceUntilIdle()
+
+        // When: Check if we can remove the last currency
+        val canRemove = viewModel.canRemoveCurrency("USD")
+
+        // Then: Should return false
+        assertFalse(canRemove, "Should not be able to remove the last currency")
+    }
+
+    @Test
+    fun `canRemoveCurrency should return true when multiple currencies exist`() = runTest {
+        // Given: We have USD and EUR
+        val initialState = viewModel.uiState.value
+        assertEquals(2, initialState.currencies.size)
+
+        // When: Check if we can remove a currency
+        val canRemoveUsd = viewModel.canRemoveCurrency("USD")
+        val canRemoveEur = viewModel.canRemoveCurrency("EUR")
+
+        // Then: Should return true for both
+        assertTrue(canRemoveUsd, "Should be able to remove USD when multiple currencies exist")
+        assertTrue(canRemoveEur, "Should be able to remove EUR when multiple currencies exist")
+    }
 }
