@@ -12,6 +12,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.lukesleeman.currencyconverter.ui.FoldablePreview
 import com.lukesleeman.currencyconverter.ui.theme.CurrencyConverterTheme
 
 @Composable
@@ -148,4 +149,17 @@ fun NumericKeyboardPreview() {
 @Composable
 fun NumericKeyboardDarkPreview() {
     NumericKeyboardPreview()
+}
+
+@FoldablePreview
+@Composable
+fun NumericKeyboardFoldablePreview() {
+    CurrencyConverterTheme {
+        NumericKeyboard(
+            onNumberClick = { },
+            onDecimalClick = { },
+            onBackspaceClick = { },
+            modifier = Modifier.height(300.dp)
+        )
+    }
 }

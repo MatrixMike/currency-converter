@@ -22,6 +22,7 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import com.lukesleeman.currencyconverter.data.Currency
 import com.lukesleeman.currencyconverter.data.CurrencyUtils
+import com.lukesleeman.currencyconverter.ui.FoldablePreview
 import com.lukesleeman.currencyconverter.ui.theme.CurrencyConverterTheme
 
 /**
@@ -45,6 +46,7 @@ fun AddCurrencyDialog(
         Card(
             modifier = Modifier
                 .fillMaxWidth()
+                .widthIn(max = 560.dp)
                 .fillMaxHeight(0.8f), // Use 80% of screen height
             elevation = CardDefaults.cardElevation(defaultElevation = 8.dp)
         ) {
@@ -315,4 +317,13 @@ fun PreviewAddCurrencyDialogCustomFilter() {
             filterCurrencies = codeOnlyFilter
         )
     }
+}
+
+/**
+ * Preview for Pixel 9 Pro Fold (Unfolded)
+ */
+@FoldablePreview
+@Composable
+fun PreviewAddCurrencyDialogFoldable() {
+    PreviewAddCurrencyDialogWithItems()
 }

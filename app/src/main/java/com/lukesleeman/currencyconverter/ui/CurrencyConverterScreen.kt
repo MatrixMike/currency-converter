@@ -67,11 +67,17 @@ private fun CurrencyConverterScreenContent(
     var showAddCurrencyDialog by remember { mutableStateOf(false) }
     var currencyToReplace by remember { mutableStateOf<Currency?>(null) }
 
-    Column(
+    Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(MaterialTheme.colorScheme.background)
+            .background(MaterialTheme.colorScheme.background),
+        contentAlignment = Alignment.TopCenter
     ) {
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .widthIn(max = 700.dp)
+        ) {
         TopAppBar(
             title = {
                 Text(
@@ -187,6 +193,7 @@ private fun CurrencyConverterScreenContent(
                     .height(300.dp)
             )
         }
+        }
     }
 
     if (showAddCurrencyDialog) {
@@ -250,6 +257,12 @@ fun CurrencyConverterScreenPreview() {
 @Preview(showBackground = true, uiMode = android.content.res.Configuration.UI_MODE_NIGHT_YES)
 @Composable
 fun CurrencyConverterScreenDarkPreview() {
+    CurrencyConverterScreenPreview()
+}
+
+@FoldablePreview
+@Composable
+fun CurrencyConverterScreenFoldablePreview() {
     CurrencyConverterScreenPreview()
 }
 

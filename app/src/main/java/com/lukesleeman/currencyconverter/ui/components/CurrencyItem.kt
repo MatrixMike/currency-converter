@@ -32,6 +32,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.lukesleeman.currencyconverter.data.Currency
+import com.lukesleeman.currencyconverter.ui.FoldablePreview
 import com.lukesleeman.currencyconverter.ui.theme.CurrencyConverterTheme
 
 /**
@@ -140,6 +141,7 @@ fun CurrencyItem(
 @Preview(showBackground = true, name = "Wide Screen (Large Amount)", widthDp = 800, heightDp = 200)
 @Preview(showBackground = true, name = "Large Font (Large Amount)", fontScale = 1.5f)
 @Preview(showBackground = true, name = "Dark Mode (Large Amount)", uiMode = Configuration.UI_MODE_NIGHT_YES)
+@FoldablePreview
 @Composable
 fun CurrencyItemVariationsPreview() {
     var amount by remember { mutableStateOf(TextFieldValue("1234567890.12")) }
