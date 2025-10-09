@@ -72,7 +72,8 @@ Testing
 
 Planning (Before Implementation)
 
+- ALWAYS search for existing functionality first: Before proposing any new function, utility, or helper, use Grep/Glob to search the codebase for existing implementations. Search for relevant keywords related to what you're about to create (e.g., if creating formatting logic, search for "format"; if creating parsing logic, search for "parse").
 - Read relevant existing code to understand current approach
-- Identify code that will need refactoring to avoid duplication
+- Identify code that will need refactoring to avoid duplication or where old and new approaches would coexist
 - Structure plan as: failing tests → implementation → passing tests → refactor
-- Call out what existing code will be removed/replaced
+- Explicitly call out what existing code will be removed/replaced in your plan
