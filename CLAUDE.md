@@ -8,6 +8,8 @@ Core Principles
 - Before adding new code, search for existing similar functionality
 - Consolidate duplicate logic - one source of truth for formatting, parsing, validation, etc.
 - When refactoring, ensure old and new approaches don't coexist
+- **RED FLAG: If your plan adds new code but doesn't explicitly list what old code will be removed,
+  stop and audit for architectural violations**
 - When uncertain, ask for clarification and discuss trade-offs
 - Its okay to suggest cleaning up and refactoring, particularly at the beginning of a task, if it
   will make the task easier to complete.
@@ -85,6 +87,15 @@ Planning (Before Implementation)
 - ALWAYS search for existing functionality first: Before proposing any new function, utility, or helper, use Grep/Glob to search the codebase for existing implementations. Search for relevant keywords related to what you're about to create (e.g., if creating formatting logic, search for "format"; if creating parsing logic, search for "parse").
 - Read relevant existing code to understand current approach
 - Identify code that will need refactoring to avoid duplication or where old and new approaches would coexist
+- **Before proposing any solution, audit existing code for architectural violations:**
+  - If adding formatting → check ViewModel for existing formatting to remove
+  - If adding parsing → check UI layer for parsing logic to move
+  - If adding validation → search for duplicate validation
+  - Ask: "Will my solution create duplicate or coexisting approaches?" If yes, plan refactoring FIRST
+- **When proposing a solution that touches a layer boundary (ViewModel ↔ UI):**
+  - Explicitly check BOTH sides of the boundary
+  - List what will be REMOVED from each layer
+  - Ensure no logic leaks across the boundary in either direction
 - Question existing architecture: If existing code violates separation of concerns, propose
   refactoring first
 - Apply "one source of truth" rigorously: If you'd create duplicate
