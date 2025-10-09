@@ -40,6 +40,13 @@ Compose
   required
 - Reserve `= null` and optional parameters for true configuration options, not core functionality
 - Follow Material3 design guidelines
+- Create custom preview annotations (e.g., created a `@FoldablePreview` for foldable screen sizes)
+  to avoid
+  repeating device specs
+- Consider large screens and foldables: use max-width constraints (600-700dp) to prevent excessive
+  stretching on wide displays
+- When using `enableEdgeToEdge()`, always apply `windowInsetsPadding(WindowInsets.systemBars)` to
+  handle both 3-button and gesture navigation
 
 Testing
 
