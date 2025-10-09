@@ -28,10 +28,11 @@ Kotlin Language Use
 
 Compose
 
+- ZERO business logic in composables - all logic goes in ViewModel where it's testable
+  - Bad: `enabled = currencies.size > 1`
+  - Good: `enabled = uiState.canRemoveCurrencies`
+  - Composables are pure renderers - no ifs for business rules, no calculations
 - Prefer stateless composables with ViewModel handling state
-- Avoid "business logic" inside the composable - instead shift this to the ViewModel where its
-  testable. The composable should just be a straight renderer of the View Models state, and not
-  contain ifs, build lists, etc
 - Always provide `@Preview` functions for Compose screens/components
 - Use Modifier parameters with default values
 - Make composable parameters required by default - only add default values when there's a genuine
@@ -50,7 +51,9 @@ Compose
 
 Testing
 
-- Test-first development when designing new APIs
+- Test-first for ALL new features and bug fixes - not just APIs
+  - Write empty function → failing tests → implement → verify tests pass
+  - Run tests after each step to confirm fail→pass cycle
 - When fixing bugs try and begin by writing a test that will reproduce the issue. ONLY AFTER we have
   reproduced the issue should we fix it.
 - Test names with backticks describing behavior: `"should return X when Y"`
