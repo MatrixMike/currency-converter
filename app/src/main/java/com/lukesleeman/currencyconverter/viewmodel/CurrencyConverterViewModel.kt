@@ -278,6 +278,10 @@ class CurrencyConverterViewModel(
 
     fun replaceCurrency(oldCurrency: Currency, newCurrency: Currency) {
         viewModelScope.launch {
+            // Update preferences first so initializeWithCurrencies will use the new currency as active
+            updatePreferences { preferences ->
+                preferences.copy(activeCurrencyCode = newCurrency.code)
+            }
             replaceCurrency.invoke(oldCurrency, newCurrency)
         }
     }

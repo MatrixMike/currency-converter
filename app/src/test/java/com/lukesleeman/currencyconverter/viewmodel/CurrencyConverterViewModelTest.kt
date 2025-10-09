@@ -482,4 +482,27 @@ class CurrencyConverterViewModelTest {
         // EUR should be at position 0, USD at position 1 (swapped)
         assertEquals(listOf("EUR", "USD", "GBP"), finalCodes, "Should have swapped USD and EUR positions")
     }
+
+    @Test
+    fun `replaceCurrency should set the new currency as active with text selected`() = runTest {
+        // Given: USD is active, EUR is not active
+        val initialState = viewModel.uiState.value
+        assertEquals("USD", initialState.activeCurrency.currency.code, "USD should be active initially")
+
+        // When: Replace EUR (not active) with GBP
+        viewModel.replaceCurrency(eurCurrency, gbpCurrency)
+        testDispatcher.scheduler.advanceUntilIdle()
+
+        // Then: GBP should become the active currency
+        val finalState = viewModel.uiState.value
+        assertEquals("GBP", finalState.activeCurrency.currency.code,
+            "GBP should be active after replacing EUR with it")
+
+        // And: GBP's text should be fully selected
+        val gbpItem = finalState.currencies.find { it.currency.code == "GBP" }
+        assertNotNull(gbpItem, "GBP should exist in currency list")
+        val expectedSelection = TextRange(0, gbpItem.textFieldValue.text.length)
+        assertEquals(expectedSelection, gbpItem.textFieldValue.selection,
+            "GBP text should be fully selected when it becomes active")
+    }
 }
