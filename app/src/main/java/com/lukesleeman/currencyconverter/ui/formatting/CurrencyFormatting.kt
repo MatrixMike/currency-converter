@@ -1,7 +1,9 @@
 package com.lukesleeman.currencyconverter.ui.formatting
 
 import androidx.compose.ui.text.AnnotatedString
+import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.input.OffsetMapping
+import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.input.TransformedText
 import androidx.compose.ui.text.input.VisualTransformation
 import java.text.DecimalFormat
@@ -60,6 +62,72 @@ private fun formatCurrencyValue(input: String, locale: Locale, addDecimalPlaces:
  */
 fun formatCurrencyDisplay(value: String, locale: Locale = Locale.getDefault()): String {
     return formatCurrencyValue(value, locale, addDecimalPlaces = true)
+}
+
+/**
+ * Filters TextFieldValue to only allow numeric currency input.
+ * Allows: digits (0-9) and single decimal point (.)
+ * Strips: all other characters (letters, symbols, extra decimals)
+ * Preserves: cursor position and selection range relative to remaining characters
+ *
+ * @param value The input TextFieldValue to filter
+ * @return Filtered TextFieldValue with only valid numeric characters
+ */
+fun filterNumericInput(value: TextFieldValue): TextFieldValue {
+    val originalText = value.text
+    val originalSelection = value.selection
+
+    // Build filtered text, tracking which characters are kept
+    val filteredText = buildString {
+        var hasDecimal = false
+        for (char in originalText) {
+            when {
+                char.isDigit() -> append(char)
+                char == '.' && !hasDecimal -> {
+                    append(char)
+                    hasDecimal = true
+                }
+                // Ignore all other characters (letters, symbols, extra decimals)
+            }
+        }
+    }
+
+    // If nothing changed, return original to avoid unnecessary recomposition
+    if (filteredText == originalText) {
+        return value
+    }
+
+    // Calculate new cursor/selection position
+    // Map each position in original text to position in filtered text
+    val positionMapping = buildList {
+        var filteredIndex = 0
+        var hasDecimal = false
+        for (originalIndex in originalText.indices) {
+            val char = originalText[originalIndex]
+            val isKept = when {
+                char.isDigit() -> true
+                char == '.' && !hasDecimal -> {
+                    hasDecimal = true
+                    true
+                }
+                else -> false
+            }
+
+            add(filteredIndex)
+            if (isKept) filteredIndex++
+        }
+        // Add final position (after last character)
+        add(filteredIndex)
+    }
+
+    // Map original selection to filtered selection
+    val newStart = positionMapping.getOrElse(originalSelection.start.coerceIn(0, originalText.length)) { filteredText.length }
+    val newEnd = positionMapping.getOrElse(originalSelection.end.coerceIn(0, originalText.length)) { filteredText.length }
+
+    return TextFieldValue(
+        text = filteredText,
+        selection = TextRange(newStart, newEnd)
+    )
 }
 
 /**

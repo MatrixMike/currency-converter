@@ -135,4 +135,91 @@ class CurrencyFormattingTest {
 
     // Note: Locale support architecture is in place (functions accept locale parameter)
     // Additional locale testing would require more comprehensive DecimalFormat handling
+
+    // Tests for filterNumericInput()
+    @Test
+    fun `filterNumericInput should strip letters from input`() {
+        val input = androidx.compose.ui.text.input.TextFieldValue("ABC123")
+        val result = filterNumericInput(input)
+        assertEquals("123", result.text)
+    }
+
+    @Test
+    fun `filterNumericInput should strip symbols from input`() {
+        val input = androidx.compose.ui.text.input.TextFieldValue("12\$34")
+        val result = filterNumericInput(input)
+        assertEquals("1234", result.text)
+    }
+
+    @Test
+    fun `filterNumericInput should allow single decimal point`() {
+        val input = androidx.compose.ui.text.input.TextFieldValue("12.5")
+        val result = filterNumericInput(input)
+        assertEquals("12.5", result.text)
+    }
+
+    @Test
+    fun `filterNumericInput should strip extra decimal points`() {
+        val input = androidx.compose.ui.text.input.TextFieldValue("12.5.5")
+        val result = filterNumericInput(input)
+        assertEquals("12.55", result.text)
+    }
+
+    @Test
+    fun `filterNumericInput should handle empty input`() {
+        val input = androidx.compose.ui.text.input.TextFieldValue("")
+        val result = filterNumericInput(input)
+        assertEquals("", result.text)
+    }
+
+    @Test
+    fun `filterNumericInput should preserve trailing decimal point`() {
+        val input = androidx.compose.ui.text.input.TextFieldValue("12.")
+        val result = filterNumericInput(input)
+        assertEquals("12.", result.text)
+    }
+
+    @Test
+    fun `filterNumericInput should strip all letters`() {
+        val input = androidx.compose.ui.text.input.TextFieldValue("ABC")
+        val result = filterNumericInput(input)
+        assertEquals("", result.text)
+    }
+
+    @Test
+    fun `filterNumericInput should keep only first decimal from multiple decimals`() {
+        val input = androidx.compose.ui.text.input.TextFieldValue("...")
+        val result = filterNumericInput(input)
+        assertEquals(".", result.text)
+    }
+
+    @Test
+    fun `filterNumericInput should preserve cursor position after filtering`() {
+        // Input: "AB12C34" with cursor at position 5 (after 'C', before '3')
+        // After filtering: "1234" with cursor at position 2 (after '12', before '34')
+        val input = androidx.compose.ui.text.input.TextFieldValue(
+            text = "AB12C34",
+            selection = androidx.compose.ui.text.TextRange(5)
+        )
+        val result = filterNumericInput(input)
+
+        assertEquals("1234", result.text)
+        assertEquals(2, result.selection.start)
+        assertEquals(2, result.selection.end)
+    }
+
+    @Test
+    fun `filterNumericInput should preserve selection range after filtering`() {
+        // Input: "AB12C34" with selection from 2 to 5 (selecting "12C")
+        // After filtering: "1234" with selection from 0 to 2 (selecting "12")
+        val input = androidx.compose.ui.text.input.TextFieldValue(
+            text = "AB12C34",
+            selection = androidx.compose.ui.text.TextRange(2, 5)
+        )
+        val result = filterNumericInput(input)
+
+        assertEquals("1234", result.text)
+        assertEquals(0, result.selection.start)
+        assertEquals(2, result.selection.end)
+    }
 }

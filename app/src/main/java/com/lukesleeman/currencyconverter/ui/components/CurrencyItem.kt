@@ -12,6 +12,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.KeyboardArrowDown
@@ -35,6 +36,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
@@ -43,6 +45,7 @@ import androidx.compose.ui.unit.sp
 import com.lukesleeman.currencyconverter.data.Currency
 import com.lukesleeman.currencyconverter.ui.FoldablePreview
 import com.lukesleeman.currencyconverter.ui.formatting.CurrencyVisualTransformation
+import com.lukesleeman.currencyconverter.ui.formatting.filterNumericInput
 import com.lukesleeman.currencyconverter.ui.formatting.formatCurrencyDisplay
 import com.lukesleeman.currencyconverter.ui.theme.CurrencyConverterTheme
 
@@ -155,9 +158,10 @@ fun CurrencyItem(
                 TextField(
                     value = amount,
                     onValueChange = { newValue: TextFieldValue ->
-                        onValueChange(newValue)
+                        onValueChange(filterNumericInput(newValue))
                     },
                     singleLine = true,
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
                     visualTransformation = CurrencyVisualTransformation(),
                     textStyle = MaterialTheme.typography.headlineSmall.copy(
                         textAlign = TextAlign.End,
