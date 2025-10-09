@@ -13,7 +13,6 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
-import java.text.DecimalFormat
 
 class CurrencyConverterViewModel(
     private val selectedCurrenciesFlow: Flow<List<Currency>>,
@@ -26,12 +25,6 @@ class CurrencyConverterViewModel(
     private val getPreferences: suspend () -> UserPreferences,
     private val updatePreferences: suspend ((UserPreferences) -> UserPreferences) -> Unit
 ) : ViewModel() {
-
-    companion object {
-        private const val DECIMAL_FORMAT_PATTERN = "#,##0.00"
-    }
-
-    private val decimalFormat = DecimalFormat(DECIMAL_FORMAT_PATTERN)
 
     private val _uiState = MutableStateFlow(
         CurrencyConverterUiState(
@@ -72,8 +65,8 @@ class CurrencyConverterViewModel(
             val displayItems = currencies.map { currency ->
                 val convertedAmount = if (currency.code == activeCurrency.code) amount
                                      else conversionResults[currency.code] ?: amount
-                val formattedValue = if (currency.code == activeCurrency.code) currentInputValue else formatNumber(convertedAmount)
-                CurrencyDisplayItem(currency, TextFieldValue(formattedValue))
+                val rawValue = if (currency.code == activeCurrency.code) currentInputValue else "%.2f".format(convertedAmount)
+                CurrencyDisplayItem(currency, TextFieldValue(rawValue))
             }
 
             val activeDisplayItem = displayItems.find { it.currency.code == activeCurrency.code } ?: displayItems.first()
@@ -238,10 +231,6 @@ class CurrencyConverterViewModel(
         updateActiveFieldText(newValue)
     }
 
-    private fun formatNumber(number: Double): String {
-        return decimalFormat.format(number)
-    }
-
     private fun parseAmount(text: String): Double? {
         return if (text.isEmpty() || text == "." || text == ",") 0.0
                else text.replace(",", "").toDoubleOrNull()
@@ -262,7 +251,7 @@ class CurrencyConverterViewModel(
                 val convertedAmount = conversionResults[item.currency.code] ?: anchorAmount
                 item.copy(
                     textFieldValue = TextFieldValue(
-                        text = formatNumber(convertedAmount),
+                        text = "%.2f".format(convertedAmount),
                         selection = TextRange(0) // Cursor at start for non-active currencies
                     )
                 )

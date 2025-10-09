@@ -42,6 +42,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.lukesleeman.currencyconverter.data.Currency
 import com.lukesleeman.currencyconverter.ui.FoldablePreview
+import com.lukesleeman.currencyconverter.ui.formatting.CurrencyVisualTransformation
+import com.lukesleeman.currencyconverter.ui.formatting.formatCurrencyDisplay
 import com.lukesleeman.currencyconverter.ui.theme.CurrencyConverterTheme
 
 /**
@@ -156,6 +158,7 @@ fun CurrencyItem(
                         onValueChange(newValue)
                     },
                     singleLine = true,
+                    visualTransformation = CurrencyVisualTransformation(),
                     textStyle = MaterialTheme.typography.headlineSmall.copy(
                         textAlign = TextAlign.End,
                         fontWeight = FontWeight.Medium
@@ -170,7 +173,7 @@ fun CurrencyItem(
                 )
             } else {
                 Text(
-                    text = amount.text,
+                    text = formatCurrencyDisplay(amount.text),
                     style = MaterialTheme.typography.headlineSmall.copy(
                         textAlign = TextAlign.End,
                         fontWeight = FontWeight.Medium
