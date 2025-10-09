@@ -5,6 +5,9 @@ Core Principles
 - Follow functional Kotlin style: immutable data, pure functions, minimal side effects
 - Prioritise clean and readable code. If a block of code is hard to understand at a glance, then its
   a sign we should refactor.
+- Before adding new code, search for existing similar functionality
+- Consolidate duplicate logic - one source of truth for formatting, parsing, validation, etc.
+- When refactoring, ensure old and new approaches don't coexist
 - When uncertain, ask for clarification and discuss trade-offs
 - Its okay to suggest cleaning up and refactoring, particularly at the beginning of a task, if it
   will make the task easier to complete.
@@ -54,6 +57,8 @@ Testing
 - Test-first for ALL new features and bug fixes - not just APIs
   - Write empty function → failing tests → implement → verify tests pass
   - Run tests after each step to confirm fail→pass cycle
+  - ALWAYS write tests BEFORE implementation code in your plan
+  - Plan structure: 1) Write failing tests, 2) Implement, 3) Run tests, 4) Iterate
 - When fixing bugs try and begin by writing a test that will reproduce the issue. ONLY AFTER we have
   reproduced the issue should we fix it.
 - Test names with backticks describing behavior: `"should return X when Y"`
@@ -64,3 +69,10 @@ Testing
 - Use turbine for testing Flows
 - Always question Thread.sleep() in tests!  Its often a sign that something is wrong somewhere else,
   particularly in our software architecture. It may indicate the need to refactor.
+
+Planning (Before Implementation)
+
+- Read relevant existing code to understand current approach
+- Identify code that will need refactoring to avoid duplication
+- Structure plan as: failing tests → implementation → passing tests → refactor
+- Call out what existing code will be removed/replaced
